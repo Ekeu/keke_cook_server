@@ -7,6 +7,7 @@ const connectDB = require('./config/db');
 
 //Routes
 const categoryRoutes = require('./routes/category.routes');
+const subCategoryRoutes = require('./routes/subcategory.routes');
 const authRoutes = require('./routes/auth.routes');
 
 dotenv.config();
@@ -23,6 +24,7 @@ if (process.env.NODE_ENV === 'development') {
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/categories', categoryRoutes);
+app.use('/api/v1/subcategories', subCategoryRoutes);
 
 const PORT = process.env.PORT || 5000;
 
