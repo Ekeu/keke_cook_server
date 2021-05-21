@@ -7,6 +7,7 @@ const {
   deleteCategory,
   createCategory,
   updateCategory,
+  getSubcategoriesFromCategory
 } = require('../controllers/category.controllers');
 
 const { authCheck, adminCheck } = require('../middlewares/auth.middleware');
@@ -20,5 +21,6 @@ router
   .get(getCategoryBySlug)
   .delete(authCheck, adminCheck, deleteCategory)
   .put(authCheck, adminCheck, updateCategory);
+router.route('/subcategories/:_id').get(getSubcategoriesFromCategory)
 
 module.exports = router;

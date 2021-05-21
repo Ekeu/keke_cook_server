@@ -1,4 +1,6 @@
 const Category = require('../models/category.model');
+const Subcategory = require('../models/subcategory.model');
+
 const slugify = require('slugify');
 const initials = require('initials');
 
@@ -16,6 +18,21 @@ const getCategoryBySlug = async (req, res) => {
 const getCategories = async (req, res) => {
   const categories = await Category.find({}).sort({ createdAt: -1 }).exec();
   res.json(categories);
+};
+
+// @desc Fetch all subcategories from category
+// @route GET /api/v1/categories/subcategories/:_id
+// @access Public
+const getSubcategoriesFromCategory = async (req, res) => {
+  Subcategory.find({ parentCategory: req.params._id }).exec(
+    (error, subcategories) => {
+      if (error) {
+        res.json(error);
+      } else {
+        res.json(subcategories);
+      }
+    }
+  );
 };
 
 // @desc Delete category
@@ -68,6 +85,7 @@ const updateCategory = async (req, res) => {
 
 module.exports = {
   getCategoryBySlug,
+  getSubcategoriesFromCategory,
   getCategories,
   deleteCategory,
   createCategory,
