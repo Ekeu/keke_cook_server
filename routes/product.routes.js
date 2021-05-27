@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   getProducts,
-  getProductById,
+  getProductBySlug,
   deleteProduct,
   createProduct,
   updateProduct,
@@ -12,7 +12,7 @@ const { authCheck, adminCheck } = require('../middlewares/auth.middleware');
 router.route('/').get(getProducts).post(authCheck, adminCheck, createProduct);
 router
   .route('/:slug')
-  .get(getProductById)
+  .get(getProductBySlug)
   .delete(authCheck, adminCheck, deleteProduct)
   .put(authCheck, adminCheck, updateProduct);
 
