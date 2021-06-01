@@ -6,10 +6,12 @@ const {
   deleteProduct,
   createProduct,
   updateProduct,
+  getSortedProducts,
 } = require('../controllers/product.controllers');
 const { authCheck, adminCheck } = require('../middlewares/auth.middleware');
 
 router.route('/').get(getProducts).post(authCheck, adminCheck, createProduct);
+router.route('/filter').get(getSortedProducts);
 router
   .route('/:slug')
   .get(getProductBySlug)
