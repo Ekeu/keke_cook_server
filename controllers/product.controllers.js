@@ -85,6 +85,50 @@ const updateProduct = async (req, res) => {
 // @access Private
 const createProductReview = async (req, res) => {};
 
+// Without Pagination
+/* // @desc Get sortproducts
+// @route Get /api/v1/products/sort
+// @access Public
+const getSortedProducts = async (req, res) => {
+  try {
+    const { sort, order, limit } = req.query;
+    const products = await Product.find({})
+      .populate('category')
+      .populate('subcategories')
+      .sort([[sort, order]])
+      .limit(Number(limit))
+      .exec();
+    res.json(products);
+  } catch (error) {
+    console.log(error)
+    res.status(401).json(error);
+  }
+}; */
+
+// @desc Get sortproducts
+// @route Get /api/v1/products/sort
+// @access Public
+const getSortedProducts = async (req, res) => {
+  try {
+    const { sort, order, pageNumber } = req.query;
+    const page = Number(pageNumber) || 1;
+    const pageSize = 3;
+
+    const count = await Product.find({}).estimatedDocumentCount().exec();
+    const products = await Product.find({})
+      .skip(pageSize * (page - 1))
+      .populate('category')
+      .populate('subcategories')
+      .sort([[sort, order]])
+      .limit(pageSize)
+      .exec();
+    res.json({ products, page, pages: Math.ceil(count / pageSize) });
+  } catch (error) {
+    console.log(error);
+    res.status(401).json(error);
+  }
+};
+
 module.exports = {
   getProducts,
   getProductBySlug,
@@ -92,4 +136,5 @@ module.exports = {
   createProduct,
   createProductReview,
   updateProduct,
+  getSortedProducts,
 };
