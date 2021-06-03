@@ -1,4 +1,5 @@
 const Subcategory = require('../models/subcategory.model');
+const Product = require('../models/product.model');
 const slugify = require('slugify');
 const initials = require('initials');
 
@@ -11,7 +12,10 @@ const getSubcategoryBySlug = async (req, res) => {
   })
     .populate('parentCategory')
     .exec();
-  res.json(subcategory);
+  const products = await Product.find({ subcategories: subcategory })
+    .populate('category')
+    .exec();
+  res.status(201).json({subcategory, products});
 };
 
 // @desc Fetch all subcategories
