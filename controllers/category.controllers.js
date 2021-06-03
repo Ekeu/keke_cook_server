@@ -1,15 +1,19 @@
 const Category = require('../models/category.model');
+const Product = require('../models/product.model');
 const Subcategory = require('../models/subcategory.model');
 
 const slugify = require('slugify');
 const initials = require('initials');
 
-// @desc Fetch single category
+// @desc Fetch single category with it's products
 // @route GET /api/v1/categories/:slug
 // @access Public
 const getCategoryBySlug = async (req, res) => {
   const category = await Category.findOne({ slug: req.params.slug }).exec();
-  res.json(category);
+  const products = await Product.find({ category })
+    .populate('category')
+    .exec();
+  res.json({ category, products });
 };
 
 // @desc Fetch all categories

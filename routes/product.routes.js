@@ -7,6 +7,8 @@ const {
   createProduct,
   updateProduct,
   getSortedProducts,
+  createProductReview,
+  getRelatedProducts
 } = require('../controllers/product.controllers');
 const { authCheck, adminCheck } = require('../middlewares/auth.middleware');
 
@@ -17,5 +19,7 @@ router
   .get(getProductBySlug)
   .delete(authCheck, adminCheck, deleteProduct)
   .put(authCheck, adminCheck, updateProduct);
+router.put('/:_id/reviews', authCheck, createProductReview)
+router.get('/:_id/related', getRelatedProducts)
 
 module.exports = router;

@@ -55,15 +55,16 @@ const productSchema = new mongoose.Schema(
     productType: {
       type: String
     },
-    /* ratings: [
+    ratings: [
       {
-        star: Number,
-        postedBy: {
+        rating: Number,
+        user: {
           type: ObjectId,
+          required: true,
           ref: 'User',
         },
       },
-    ], */
+    ],
     productSpecifics: Object,
   },
   {

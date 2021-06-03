@@ -1,4 +1,5 @@
 const Product = require('../models/product.model');
+const User = require('../models/user.model');
 const slugify = require('slugify');
 
 // @desc Fetch all products
@@ -76,14 +77,49 @@ const updateProduct = async (req, res) => {
     );
     res.json(updatedProduct);
   } catch (error) {
+    console.log(error)
     res.status(400).send('La mises à jour de ce produit à échouée');
   }
 };
 
-// @desc New Review
-// @route POST /api/foods/:_id/reviews
+// @desc New Review (Star Rating)
+// @route PUT /api/v1/products/:_id/reviews
 // @access Private
-const createProductReview = async (req, res) => {};
+const createProductReview = async (req, res) => {
+  const product = await Product.findById(req.params._id).exec();
+  const user = await User.findOne({ email: req.user.email }).exec();
+
+  const { rating } = req.body;
+
+  const alreadyReviewed = product.ratings.find(
+    (review) => review.user.toString() === user._id.toString()
+  );
+
+  try {
+    if (alreadyReviewed) {
+      const updatedRating = await Product.updateOne(
+        {
+          ratings: { $elemMatch: alreadyReviewed },
+        },
+        { $set: { 'ratings.$.rating': rating } },
+        { new: true }
+      ).exec();
+      res.status(201).json(updatedRating);
+    } else {
+      const addedRating = await Product.findByIdAndUpdate(
+        product._id,
+        {
+          $push: { ratings: { rating, user: user._id } },
+        },
+        { new: true }
+      ).exec();
+
+      res.status(201).json(addedRating);
+    }
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
 
 // Without Pagination
 /* // @desc Get sortproducts
@@ -124,8 +160,27 @@ const getSortedProducts = async (req, res) => {
       .exec();
     res.json({ products, page, pages: Math.ceil(count / pageSize) });
   } catch (error) {
-    console.log(error);
-    res.status(401).json(error);
+    res.status(500).json(error);
+  }
+};
+
+// @desc Get Related Products
+// @route Get /api/v1/products/:_id/related
+// @access Public
+const getRelatedProducts = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params._id).exec();
+    const relatedProducts = await Product.find({
+      _id: { $ne: product._id },
+      category: product.category,
+    })
+      .limit(3)
+      .populate('category')
+      .populate('subcategories')
+      .populate('user');
+    res.json(relatedProducts);
+  } catch (error) {
+    res.status(500).json(error);
   }
 };
 
@@ -137,4 +192,5 @@ module.exports = {
   createProductReview,
   updateProduct,
   getSortedProducts,
+  getRelatedProducts,
 };
