@@ -52,6 +52,7 @@ const deleteSubcategory = async (req, res) => {
     const deletedSubcategory = await Subcategory.findOneAndDelete({
       slug: req.params.slug,
     });
+    deletedSubcategory.RemoveFromAlgolia()
     res.json(deletedSubcategory);
   } catch (error) {
     res.status(400).send('La suppression de cette sous catégorie à échouée');
@@ -92,6 +93,7 @@ const updateSubcategory = async (req, res) => {
       },
       { new: true }
     );
+    updatedSubcategory.SyncToAlgolia()
     res.json(updatedSubcategory);
   } catch (error) {
     res.status(400).send('La mises à jour de cette sous catégorie à échouée');

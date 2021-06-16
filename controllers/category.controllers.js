@@ -10,9 +10,7 @@ const initials = require('initials');
 // @access Public
 const getCategoryBySlug = async (req, res) => {
   const category = await Category.findOne({ slug: req.params.slug }).exec();
-  const products = await Product.find({ category })
-    .populate('category')
-    .exec();
+  const products = await Product.find({ category }).populate('category').exec();
   res.json({ category, products });
 };
 
@@ -47,6 +45,7 @@ const deleteCategory = async (req, res) => {
     const deletedCategory = await Category.findOneAndDelete({
       slug: req.params.slug,
     });
+    deletedCategory.RemoveFromAlgolia();
     res.json(deletedCategory);
   } catch (error) {
     res.status(400).send('La suppression de cette catégorie à échouée');
@@ -81,6 +80,7 @@ const updateCategory = async (req, res) => {
       { name, slug: slugify(name, { lower: true }), initials: initials(name) },
       { new: true }
     );
+    updatedCategory.SyncToAlgolia();
     res.json(updatedCategory);
   } catch (error) {
     res.status(400).send('La mises à jour de cette catégorie à échouée');

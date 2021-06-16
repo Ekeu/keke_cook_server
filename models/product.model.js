@@ -1,5 +1,11 @@
 const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 const { ObjectId } = mongoose.Schema;
+const mongooseAlgolia = require('mongoose-algolia');
+
+const { averageRating } = require('../utils/functions');
+
+dotenv.config();
 
 const productSchema = new mongoose.Schema(
   {
@@ -28,6 +34,11 @@ const productSchema = new mongoose.Schema(
       trim: true,
       maxlength: 32,
     },
+    range_price: {
+      type: Number,
+      default: 0,
+      required: true,
+    },
     category: {
       type: ObjectId,
       ref: 'Category',
@@ -53,7 +64,7 @@ const productSchema = new mongoose.Schema(
       type: String,
     },
     productType: {
-      type: String
+      type: String,
     },
     ratings: [
       {
@@ -72,6 +83,50 @@ const productSchema = new mongoose.Schema(
   }
 );
 
+productSchema.plugin(mongooseAlgolia, {
+  appId: process.env.ALGOLIA_APP_ID,
+  apiKey: process.env.ALGOLIA_ADMIN_API_KEY,
+  indexName: process.env.ALGOLIA_INDEX_NAME,
+  populate: {
+    path: 'category subcategories',
+  },
+  virtuals: {
+    rating: function(doc) {
+      return averageRating(doc.ratings)
+    }
+  }
+});
+
 const Product = mongoose.model('Product', productSchema);
+
+Product.SyncToAlgolia();
+Product.SetAlgoliaSettings({
+  searchableAttributes: [
+    'title',
+    'description',
+    'price',
+    'productType',
+    'color',
+    'subcategories.name',
+    'category',
+  ],
+  attributesForFaceting: [
+    'color',
+    'price',
+    'category',
+    'subcategories.name',
+    'shipping',
+    'range_price',
+    'productType',
+    'ratings.rating',
+    'productSpecifics.shares.share.name',
+    'productSpecifics.cakes.name',
+    'productSpecifics.fodders.name',
+    'productSpecifics.creamColors.name',
+    'productSpecifics.toppings.name',
+  ],
+  customRanking: ['desc(sold)', 'desc(rating)'],
+  replicas: ['keke-products-price-asc', 'keke-products-price-desc'],
+});
 
 module.exports = Product;

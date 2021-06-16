@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
-
+const mongooseAlgolia = require('mongoose-algolia');
+const dotenv = require('dotenv');
 const { ObjectId } = mongoose.Schema;
+
+dotenv.config();
 
 const subcategorySchema = new mongoose.Schema(
   {
@@ -34,6 +37,20 @@ const subcategorySchema = new mongoose.Schema(
   }
 );
 
+subcategorySchema.plugin(mongooseAlgolia, {
+  appId: process.env.ALGOLIA_APP_ID,
+  apiKey: process.env.ALGOLIA_ADMIN_API_KEY,
+  indexName: process.env.ALGOLIA_SUBCATEGORY_INDEX_NAME,
+  populate: {
+    path: 'parentCategory',
+  },
+});
+
 const Subcategory = mongoose.model('Subcategory', subcategorySchema);
+
+Subcategory.SyncToAlgolia();
+Subcategory.SetAlgoliaSettings({
+  searchableAttributes: ['name', 'initials'],
+});
 
 module.exports = Subcategory;
