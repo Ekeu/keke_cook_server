@@ -39,6 +39,7 @@ const deleteProduct = async (req, res) => {
     const deletedProduct = await Product.findOneAndRemove({
       slug: req.params.slug,
     }).exec();
+    deletedProduct.RemoveFromAlgolia()
     res.json(deletedProduct);
   } catch (error) {
     res.status(404).send(error);
@@ -75,6 +76,7 @@ const updateProduct = async (req, res) => {
       req.body,
       { new: true }
     );
+    updatedProduct.SyncToAlgolia()
     res.json(updatedProduct);
   } catch (error) {
     console.log(error)
@@ -104,6 +106,7 @@ const createProductReview = async (req, res) => {
         { $set: { 'ratings.$.rating': rating } },
         { new: true }
       ).exec();
+      updatedRating.SyncToAlgolia()
       res.status(201).json(updatedRating);
     } else {
       const addedRating = await Product.findByIdAndUpdate(
@@ -113,7 +116,7 @@ const createProductReview = async (req, res) => {
         },
         { new: true }
       ).exec();
-
+      addedRating.SyncToAlgolia()
       res.status(201).json(addedRating);
     }
   } catch (error) {
