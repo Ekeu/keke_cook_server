@@ -12,6 +12,8 @@ const subCategoryRoutes = require('./routes/subcategory.routes');
 const authRoutes = require('./routes/auth.routes');
 const productRoutes = require('./routes/product.routes');
 const imageRoutes = require('./routes/image.routes');
+const cartRoutes = require('./routes/cart.routes');
+const userRoutes = require('./routes/user.routes');
 
 dotenv.config();
 
@@ -36,6 +38,8 @@ app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/subcategories', subCategoryRoutes);
 app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/images', imageRoutes);
+app.use('/api/v1/cart', cartRoutes);
+app.use('/api/v1/user', userRoutes);
 
 const PORT = process.env.PORT || 5000;
 
