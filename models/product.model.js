@@ -86,7 +86,7 @@ const productSchema = new mongoose.Schema(
 productSchema.plugin(mongooseAlgolia, {
   appId: process.env.ALGOLIA_APP_ID,
   apiKey: process.env.ALGOLIA_ADMIN_API_KEY,
-  indexName: process.env.ALGOLIA_INDEX_NAME,
+  indexName: process.env.ALGOLIA_PRODUCTS_INDEX_NAME,
   populate: {
     path: 'category subcategories',
   },

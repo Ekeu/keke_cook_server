@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
-
+const mongooseAlgolia = require('mongoose-algolia');
+const dotenv = require('dotenv');
 const { ObjectId } = mongoose.Schema;
+
+dotenv.config();
 
 const userSchema = new mongoose.Schema(
   {
@@ -26,7 +29,10 @@ const userSchema = new mongoose.Schema(
       type: Array,
       default: [],
     },
-    address: String,
+    addresses: {
+      type: Array,
+      default: [],
+    },
     /* wishlist: [
       {
         type: ObjectId,
@@ -39,6 +45,24 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+userSchema.plugin(mongooseAlgolia, {
+  appId: process.env.ALGOLIA_APP_ID,
+  apiKey: process.env.ALGOLIA_ADMIN_API_KEY,
+  indexName: process.env.ALGOLIA_USERS_INDEX_NAME,
+  populate: {
+    path: 'wishlist',
+  }
+});
+
 const User = mongoose.model('User', userSchema);
+
+User.SyncToAlgolia();
+User.SetAlgoliaSettings({
+  searchableAttributes: [
+    'displayName',
+    'email',
+    'addresses'
+  ]
+});
 
 module.exports = User;

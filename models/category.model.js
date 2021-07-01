@@ -36,7 +36,7 @@ const categorySchema = new mongoose.Schema(
 categorySchema.plugin(mongooseAlgolia, {
   appId: process.env.ALGOLIA_APP_ID,
   apiKey: process.env.ALGOLIA_ADMIN_API_KEY,
-  indexName: process.env.ALGOLIA_CATEGORY_INDEX_NAME,
+  indexName: process.env.ALGOLIA_CATEGORIES_INDEX_NAME,
 });
 
 const Category = mongoose.model('Category', categorySchema);
