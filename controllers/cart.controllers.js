@@ -7,6 +7,7 @@ const Cart = require('../models/cart.model');
 // @access Private
 const createUserCart = async (req, res) => {
   const { cart } = req.body;
+  const { cartProducts, userDeliveryDate } = cart;
   const user = await User.findOne({ email: req.user.email }).exec();
   const userHasCart = await Cart.findOne({ orderedBy: user._id }).exec();
 
@@ -15,7 +16,7 @@ const createUserCart = async (req, res) => {
   }
 
   const updatedAndCheckedCart = await Promise.all(
-    cart.map(async (product) => {
+    cartProducts.map(async (product) => {
       const { productSpecifics } = await Product.findById(product?._id)
         .select('productSpecifics')
         .exec();
@@ -46,6 +47,7 @@ const createUserCart = async (req, res) => {
       products: updatedAndCheckedCart,
       cartTotal,
       orderedBy: user._id,
+      requestedDate: userDeliveryDate,
     }).save();
     res.status(201).json(createdCart);
   } catch (error) {
@@ -58,8 +60,8 @@ const createUserCart = async (req, res) => {
 // @access Private
 const getUserCart = async (req, res) => {
   const user = await User.findOne({ email: req.user.email }).exec();
-  const cart = await Cart.findOne({ orderedBy: user._id }).exec()
-  res.json(cart)
+  const cart = await Cart.findOne({ orderedBy: user._id }).exec();
+  res.json(cart);
 };
 
 // @desc Empty User Cart
@@ -67,12 +69,12 @@ const getUserCart = async (req, res) => {
 // @access Private
 const emptyCart = async (req, res) => {
   const user = await User.findOne({ email: req.user.email }).exec();
-  const cart = await Cart.findOneAndRemove({ orderedBy: user._id }).exec()
-  res.json(cart)
+  const cart = await Cart.findOneAndRemove({ orderedBy: user._id }).exec();
+  res.json(cart);
 };
 
 module.exports = {
   createUserCart,
   getUserCart,
-  emptyCart
+  emptyCart,
 };

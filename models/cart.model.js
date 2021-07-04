@@ -10,11 +10,14 @@ const cartSchema = new mongoose.Schema(
   {
     products: Array,
     cartTotal: Number,
+    discount: Number,
+    appliedDiscount: String,
     totalAfterDiscount: Number,
     orderedBy: {
       type: ObjectId,
       ref: 'User',
     },
+    requestedDate: Date,
   },
   {
     timestamps: true,

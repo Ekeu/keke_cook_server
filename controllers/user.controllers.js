@@ -1,4 +1,6 @@
 const User = require('../models/user.model');
+const Coupon = require('../models/coupon.model');
+const Cart = require('../models/cart.model');
 const mongoose = require('mongoose');
 
 // @desc Add user address
@@ -100,9 +102,85 @@ const getUserAddress = async (req, res) => {
   }
 };
 
+// @desc Apply user coupon
+// @route POST /api/users/coupon
+// @access Private
+const applyCoupon = async (req, res) => {
+  const { coupon } = req.body;
+  const requestedCoupon = await Coupon.findOne({ name: coupon }).exec();
+
+  if (requestedCoupon) {
+    const user = await User.findOne({ email: req.user.email }).exec();
+    const { products, cartTotal } = await Cart.findOne({
+      orderedBy: user._id,
+    }).exec();
+    const totalAfterDiscount =
+      cartTotal - (cartTotal * requestedCoupon.discount) / 100;
+    const productsAfterDiscount = products.map((product) => {
+      return {
+        ...product,
+        discount: requestedCoupon.discount,
+        priceAfterDiscount:
+          product.price - (product.price * requestedCoupon.discount) / 100,
+      };
+    });
+    const cartAfterDiscount = await Cart.findOneAndUpdate(
+      { orderedBy: user._id },
+      {
+        totalAfterDiscount,
+        discount: requestedCoupon.discount,
+        appliedDiscount: requestedCoupon.name,
+        products: productsAfterDiscount,
+      },
+      { new: true }
+    );
+    res.json(cartAfterDiscount);
+  } else {
+    res
+      .status(400)
+      .send(
+        'Ce code n’a pas pu être identifié. Merci de vérifier et de réessayer.'
+      );
+  }
+};
+
+// @desc Remove user coupon
+// @route PUT /api/users/coupon
+// @access Private
+const removeCoupon = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.user.email }).exec();
+    const { products } = await Cart.findOne({
+      orderedBy: user._id,
+    }).exec();
+    const productsAfterRemovedDiscount = products.map((product) => {
+      return {
+        ...product,
+        discount: null,
+        priceAfterDiscount: null,
+      };
+    });
+    const cartAfterRemovedDiscount = await Cart.findOneAndUpdate(
+      { orderedBy: user._id },
+      {
+        totalAfterDiscount: null,
+        discount: null,
+        appliedDiscount: '',
+        products: productsAfterRemovedDiscount,
+      },
+      { new: true }
+    );
+    res.json(cartAfterRemovedDiscount);
+  } catch (error) {
+    res.status(400).send(error);
+  }
+};
+
 module.exports = {
   addUserAddress,
   updateUserAddress,
   deleteUserAddress,
   getUserAddress,
+  applyCoupon,
+  removeCoupon,
 };
