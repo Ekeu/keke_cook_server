@@ -14,7 +14,7 @@ node_modules
 /build
 
 #firebase
-/config/firebase*
+#/config/firebase*
 
 # misc
 .DS_Store
