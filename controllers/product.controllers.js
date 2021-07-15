@@ -39,7 +39,7 @@ const deleteProduct = async (req, res) => {
     const deletedProduct = await Product.findOneAndRemove({
       slug: req.params.slug,
     }).exec();
-    deletedProduct.RemoveFromAlgolia()
+    deletedProduct.RemoveFromAlgolia();
     res.json(deletedProduct);
   } catch (error) {
     res.status(404).send(error);
@@ -54,6 +54,7 @@ const createProduct = async (req, res) => {
     req.body.slug = slugify(req.body.title, { lower: true });
     const product = new Product(req.body);
     const createdProduct = await product.save();
+    createdProduct.SyncToAlgolia();
     res.status(201).json(createdProduct);
   } catch (error) {
     console.log(error);
@@ -76,10 +77,10 @@ const updateProduct = async (req, res) => {
       req.body,
       { new: true }
     );
-    updatedProduct.SyncToAlgolia()
+    updatedProduct.SyncToAlgolia();
     res.json(updatedProduct);
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(400).send('La mises à jour de ce produit à échouée');
   }
 };
@@ -99,14 +100,14 @@ const createProductReview = async (req, res) => {
 
   try {
     if (alreadyReviewed) {
-      const updatedRating = await Product.updateOne(
+      const updatedRating = await Product.findOneAndUpdate(
         {
-          ratings: { $elemMatch: alreadyReviewed },
+          'ratings._id': alreadyReviewed._id,
         },
         { $set: { 'ratings.$.rating': rating } },
         { new: true }
       ).exec();
-      updatedRating.SyncToAlgolia()
+      updatedRating.SyncToAlgolia();
       res.status(201).json(updatedRating);
     } else {
       const addedRating = await Product.findByIdAndUpdate(
@@ -116,10 +117,11 @@ const createProductReview = async (req, res) => {
         },
         { new: true }
       ).exec();
-      addedRating.SyncToAlgolia()
+      addedRating.SyncToAlgolia();
       res.status(201).json(addedRating);
     }
   } catch (error) {
+    console.log(error);
     res.status(400).json(error);
   }
 };

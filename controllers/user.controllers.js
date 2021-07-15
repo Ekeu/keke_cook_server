@@ -4,7 +4,7 @@ const Cart = require('../models/cart.model');
 const mongoose = require('mongoose');
 
 // @desc Add user address
-// @route PUT /api/users/address/add
+// @route PUT /api/v1/users/address/add
 // @access Private
 const addUserAddress = async (req, res) => {
   const user = await User.findOne({ email: req.user.email }).exec();
@@ -25,7 +25,7 @@ const addUserAddress = async (req, res) => {
 };
 
 // @desc Update user address
-// @route PUT /api/users/address/update/:_id
+// @route PUT /api/v1/users/address/update/:_id
 // @access Private
 const updateUserAddress = async (req, res) => {
   const user = await User.findOne({ email: req.user.email }).exec();
@@ -58,7 +58,7 @@ const updateUserAddress = async (req, res) => {
 };
 
 // @desc Delete user address
-// @route DELETE /api/users/address/delete/:_id
+// @route DELETE /api/v1/users/address/delete/:_id
 // @access Private
 const deleteUserAddress = async (req, res) => {
   const user = await User.findOne({ email: req.user.email }).exec();
@@ -86,7 +86,7 @@ const deleteUserAddress = async (req, res) => {
 };
 
 // @desc Get user address
-// @route GET /api/users/address/:_id
+// @route GET /api/v1/users/address/:_id
 // @access Private
 const getUserAddress = async (req, res) => {
   const user = await User.findOne({ email: req.user.email }).exec();
@@ -103,7 +103,7 @@ const getUserAddress = async (req, res) => {
 };
 
 // @desc Apply user coupon
-// @route POST /api/users/coupon
+// @route POST /api/v1/users/coupon
 // @access Private
 const applyCoupon = async (req, res) => {
   const { coupon } = req.body;
@@ -145,7 +145,7 @@ const applyCoupon = async (req, res) => {
 };
 
 // @desc Remove user coupon
-// @route PUT /api/users/coupon
+// @route PUT /api/v1/users/coupon
 // @access Private
 const removeCoupon = async (req, res) => {
   try {
@@ -176,6 +176,58 @@ const removeCoupon = async (req, res) => {
   }
 };
 
+// @desc get user's wishlist
+// @route GET /api/v1/users/wishlist
+// @access Private
+const getAllProductsInWishlist = async (req, res) => {
+  try {
+    const wishlist = await User.findOne({ email: req.user.email })
+      .select('wishlist')
+      .populate('wishlist')
+      .exec();
+    res.status(200).json(wishlist);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+// @desc Add product to user's wishlist
+// @route POST /api/v1/users/wishlist
+// @access Private
+const addProductToWishlist = async (req, res) => {
+  try {
+    const { productId } = req.body;
+    await User.findOneAndUpdate(
+      { email: req.user.email },
+      { $addToSet: { wishlist: productId } },
+      { new: true }
+    ).exec();
+
+    res.status(201).json({ ok: true });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json(error);
+  }
+};
+
+// @desc Remove user coupon
+// @route PUT /api/v1/users/wishlist/:_id
+// @access Private
+const removeProductFromWishlist = async (req, res) => {
+  try {
+    await User.findOneAndUpdate(
+      { email: req.user.email },
+      { $pull: { wishlist: req.params._id } }
+    ).exec();
+
+    res.status(201).json({ ok: true });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json(error);
+  }
+};
+
 module.exports = {
   addUserAddress,
   updateUserAddress,
@@ -183,4 +235,7 @@ module.exports = {
   getUserAddress,
   applyCoupon,
   removeCoupon,
+  getAllProductsInWishlist,
+  addProductToWishlist,
+  removeProductFromWishlist,
 };
