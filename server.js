@@ -15,6 +15,9 @@ const imageRoutes = require('./routes/image.routes');
 const cartRoutes = require('./routes/cart.routes');
 const userRoutes = require('./routes/user.routes');
 const couponRoutes = require('./routes/coupon.routes');
+const stripeRoutes = require('./routes/stripe.routes');
+const orderRoutes = require('./routes/order.routes');
+const adminRoutes = require('./routes/admin.routes');
 
 dotenv.config();
 
@@ -42,6 +45,13 @@ app.use('/api/v1/images', imageRoutes);
 app.use('/api/v1/cart', cartRoutes);
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/coupon', couponRoutes);
+app.use('/api/v1/stripe', stripeRoutes);
+app.use('/api/v1/orders', orderRoutes);
+app.use('/api/v1/admin', adminRoutes);
+
+app.get('/api/v1/config/paypal', (req, res) =>
+  res.send(process.env.PAYPAL_CLIENT_ID)
+);
 
 const PORT = process.env.PORT || 5000;
 
